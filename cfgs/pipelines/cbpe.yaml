@@ -1,0 +1,18 @@
+Samples:
+  rate: 0.05
+
+Morpheme-aware: False
+
+Path:
+  data-path: ./data/corpus/namuwiki/namuwiki.*.txt
+  save-path: ./data/corpus/namuwiki/samples/
+
+
+Pipelines:
+    Tokenizer: CharBPETokenizer()
+
+    normalizer: []
+
+    pre_tokenizer: Whitespace()
+
+    decoder: CharBPETokenizer()
