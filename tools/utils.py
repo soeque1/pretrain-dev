@@ -20,10 +20,11 @@ def preprocess_mecab(from_idx, to_idx, params):
     succ = set()
     fail = set()
     mecab = Mecab()
+    # TODO: file and line, line unordered
     for file_idx in range(from_idx, to_idx):
         try:
             read_from = open(params['inputs'][file_idx], "r").read().split('\n')
-            output = [" ".join(mecab.morphs(i)) for i in read_from]
+            output = ["\n".join(mecab.morphs(i)) for i in read_from]
             write_to = open(params['targets'][file_idx], "w").write("\n".join(output))
             succ.add(file_idx)
         except Exception:
