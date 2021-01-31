@@ -36,7 +36,7 @@ def preprocess_mecab_pool(params_index):
     params = params_index['params']
     idx = params_index['idx']
     (succ, fail) = preprocess_mecab(idx, idx+1, params)
-    return idx
+    return (succ, fail)
 
 
 def preprocess_shuf(from_idx, to_idx, params):
@@ -62,13 +62,16 @@ def preprocess_shuf_pool(params_index):
     params = params_index['params']
     idx = params_index['idx']
     (succ, fail) = preprocess_shuf(idx, idx+1, params)
-    return idx
+    return (succ, fail)
 
 
 def multiprocessing_with_async(params: dict, func: Callable[..., int], *args, **kwargs):
     pool = Pool(processes=int(cpu_count()/2), maxtasksperchild=int(cpu_count()/4))
 
     results = []
+    outputs = []
+    succ = set()
+    fail = set()
     for i in range(len(params['inputs'])):
         params_index = {'params': params, 'idx': i}
         res = pool.apply_async(func, (params_index,), callback=callback)
@@ -76,10 +79,15 @@ def multiprocessing_with_async(params: dict, func: Callable[..., int], *args, **
 
     for idx, res in enumerate(results):
         try:
-            res.get(timeout=60 * 10)
+            outputs.append(res.get(timeout=60 * 10))
         except mp.TimeoutError:
             print('Failed at:', res)
-            raise
 
     pool.close()
     pool.join()
+
+    for (_succ, _fail) in outputs:
+        succ.update(_succ)
+        fail.update(_fail)
+
+    return (succ, fail)

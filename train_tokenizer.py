@@ -18,25 +18,26 @@ def sampling(data_path: str, sample_rate: float, save_path: str = '/samples/') -
     files = glob.glob(str(data_path))
     params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
     params.update({'sample_rate': sample_rate})
-    multiprocessing_with_async(params, func=preprocess_shuf_pool)
+    res = multiprocessing_with_async(params, func=preprocess_shuf_pool)
+    return res, str(data_path) + str(save_path)
 
 
 def morphme(data_path: str, save_path: str = '/mecab/') -> None:
     files = glob.glob(str(data_path) + '/*.txt')
     params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
-    multiprocessing_with_async(params, func=preprocess_mecab_pool)
-    return str(data_path) + str(save_path)
+    res = multiprocessing_with_async(params, func=preprocess_mecab_pool)
+    return res, str(data_path) + str(save_path)
 
 
 def main(cfg):
     config = cfg_from_yaml_file(cfg)
 
     # Sampling
-    sampling(data_path=config['Path']['data-path'], sample_rate=config['Samples']['rate'], save_path='/samples/')
+    _, path = sampling(data_path=config['Path']['data-path'], sample_rate=config['Samples']['rate'], save_path='/samples/')
 
     # Morphme
     if config['Morpheme-aware']:
-        save_path = morphme(data_path=config['Path']['save-path'], save_path='/mecab/')
+        _, save_path = morphme(data_path=config['Path']['save-path'], save_path='/mecab/')
     else:
         save_path = config['Path']['save-path']
 
