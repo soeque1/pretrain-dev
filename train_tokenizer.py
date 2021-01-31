@@ -2,32 +2,10 @@ import argparse
 import os
 import re
 import glob
-import yaml
 
-# tokenizer-pre_tokenizers
-from tokenizers.pre_tokenizers import (
-    PreTokenizer,
-    ByteLevel,
-    Whitespace,
-    WhitespaceSplit,
-    BertPreTokenizer,
-    Metaspace,
-    CharDelimiterSplit,
-    Punctuation,
-    Sequence,
-    Digits,
-    UnicodeScripts,
-    Split,
-)
-
-# tokenizer-normalizers
+# configs
+from tools.config import cfg_from_yaml_file
 from tokenizers import normalizers
-from tokenizers.normalizers import NFKC, Lowercase
-
-# tokenizers
-from tools.word_piece import WordPieceTokenizer
-from tools.BBPE import ByteLevelBPETokenizer
-from tools.CBPE import CharBPETokenizer
 
 # utils
 from tools.utils import (
@@ -36,44 +14,33 @@ from tools.utils import (
 )
 
 
+def sampling(data_path: str, sample_rate: float, save_path: str = '/samples/') -> None:
+    files = glob.glob(str(data_path))
+    params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
+    params.update({'sample_rate': sample_rate})
+    multiprocessing_with_async(params, func=preprocess_shuf_pool)
 
-def cfg_from_yaml_file(cfg_file):
-    def check_and_evalfunc(config):
-        config['Pipelines']['Tokenizer'] = eval(config['Pipelines']['Tokenizer'])
-        config['Pipelines']['normalizer'] = [eval(i) for i in config['Pipelines']['normalizer']]
-        config['Pipelines']['pre_tokenizer'] = eval(config['Pipelines']['pre_tokenizer'])
-        config['Pipelines']['decoder'] = eval(config['Pipelines']['decoder'])
-        return config
 
-    with open(cfg_file, 'r') as f:
-        try:
-            config = yaml.load(f, Loader=yaml.FullLoader)
-        except:
-            config = yaml.load(f)
-
-    config = check_and_evalfunc(config)
-
-    return config
+def morphme(data_path: str, save_path: str = '/mecab/') -> None:
+    files = glob.glob(str(data_path) + '/*.txt')
+    params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
+    multiprocessing_with_async(params, func=preprocess_mecab_pool)
+    return str(data_path) + str(save_path)
 
 
 def main(cfg):
     config = cfg_from_yaml_file(cfg)
-    print(config)
 
     # Sampling
-    files = glob.glob(config['Path']['data-path'])
-    params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), '/samples/', os.path.basename(i)]) for i in files]}
-    params.update({'sample_rate': config['Samples']['rate']})
-    multiprocessing_with_async(params, func=preprocess_shuf_pool)
+    sampling(data_path=config['Path']['data-path'], sample_rate=config['Samples']['rate'], save_path='/samples/')
 
     # Morphme
     if config['Morpheme-aware']:
-        files = glob.glob(config['Path']['save-path'] + '/*.txt')
-        params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), '/mecab/', os.path.basename(i)]) for i in files]}
-        multiprocessing_with_async(params, func=preprocess_mecab_pool)
-        texts = glob.glob(config['Path']['save-path'] + '/mecab/*.txt')
+        save_path = morphme(data_path=config['Path']['save-path'], save_path='/mecab/')
     else:
-        texts = glob.glob(config['Path']['save-path'] + '*.txt')
+        save_path = config['Path']['save-path']
+
+    texts = glob.glob(save_path + '*.txt')
 
     # tokenizer
     tokenizer = config['Pipelines']['Tokenizer']

@@ -1,3 +1,4 @@
 tokenizers
 konlpy
 PyYAML
+pytest
