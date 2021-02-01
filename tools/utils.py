@@ -16,12 +16,36 @@ def callback(x):
     print ('{} running callback with arg {}'.format(mp.current_process().name, x))
 
 
-def preprocess_mecab(from_idx, to_idx, params):
+def preprocess_mecab_pool_line(params_index):
+    params = params_index['params']
+    idx = params_index['idx']
+
+    file_line = params['inputs'][idx].split('-')
+    file_idx = int(file_line[0])
+    line_idx = int(file_line[1])
+    read_from = params['files'][file_idx]
+
+    succ = dict()
+    fail = set()
+
+    try:
+        res = mecab.morphs(read_from[line_idx])
+        succ.update({file_idx: {line_idx: res}})
+    except Exception:
+        fail.add("{}".format(file_idx))
+
+    return (succ, fail)
+
+
+def preprocess_mecab_pool(params_index):
+    params = params_index['params']
+    idx = params_index['idx']
+
     succ = set()
     fail = set()
     mecab = Mecab()
-    # TODO: file and line, line unordered
-    for file_idx in range(from_idx, to_idx):
+
+    for file_idx in range(idx, idx+1):
         try:
             read_from = open(params['inputs'][file_idx], "r").read().split('\n')
             output = ["\n".join(mecab.morphs(i)) for i in read_from]
@@ -33,18 +57,15 @@ def preprocess_mecab(from_idx, to_idx, params):
     return (succ, fail)
 
 
-def preprocess_mecab_pool(params_index):
+def preprocess_shuf_pool(params_index):
     params = params_index['params']
     idx = params_index['idx']
-    (succ, fail) = preprocess_mecab(idx, idx+1, params)
-    return (succ, fail)
 
-
-def preprocess_shuf(from_idx, to_idx, params):
     succ = set()
     fail = set()
-    mecab = Mecab()
-    for file_idx in range(from_idx, to_idx):
+
+    # file
+    for file_idx in range(idx, idx+1):
         filename = params['inputs'][file_idx]
         try:
             res_tot_line = run(" ".join(['wc', '-l', filename]), shell=True,  stdout=PIPE, stderr=PIPE, universal_newlines=True)
@@ -59,13 +80,6 @@ def preprocess_shuf(from_idx, to_idx, params):
     return (succ, fail)
 
 
-def preprocess_shuf_pool(params_index):
-    params = params_index['params']
-    idx = params_index['idx']
-    (succ, fail) = preprocess_shuf(idx, idx+1, params)
-    return (succ, fail)
-
-
 def multiprocessing_with_async(params: dict, func: Callable[..., int], *args, **kwargs):
     pool = Pool(processes=int(cpu_count()/2), maxtasksperchild=int(cpu_count()/4))
 
@@ -73,6 +87,7 @@ def multiprocessing_with_async(params: dict, func: Callable[..., int], *args, **
     outputs = []
     succ = set()
     fail = set()
+
     for i in range(len(params['inputs'])):
         params_index = {'params': params, 'idx': i}
         res = pool.apply_async(func, (params_index,), callback=callback)

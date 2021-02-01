@@ -37,4 +37,4 @@ RUN ./prepare.sh
 RUN pip install --upgrade pip && \
     pip install -r requirements.txt
 
-ENTRYPOINT ['python', '-m', 'pytest', '-vv', 'tests/']
+ENTRYPOINT ["python", "-m", "pytest", "-vv", "tests/"]

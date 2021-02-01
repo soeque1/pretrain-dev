@@ -10,7 +10,8 @@ from tokenizers import normalizers
 # utils
 from tools.utils import (
     multiprocessing_with_async,
-    preprocess_mecab_pool, preprocess_shuf_pool
+    preprocess_mecab_pool, preprocess_shuf_pool,
+    preprocess_mecab_pool_line
 )
 
 
@@ -22,10 +23,37 @@ def sampling(data_path: str, sample_rate: float, save_path: str = '/samples/') -
     return res, str(data_path) + str(save_path)
 
 
+
 def morphme(data_path: str, save_path: str = '/mecab/') -> None:
     files = glob.glob(str(data_path) + '/*.txt')
     params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
     res = multiprocessing_with_async(params, func=preprocess_mecab_pool)
+    return res, str(data_path) + str(save_path)
+
+
+def morphme_lines(data_path: str, save_path: str = '/mecab/') -> None:
+    files = glob.glob(str(data_path) + '/*.txt')
+    params = {}
+    file_lines = []
+    input_files = []
+    # files
+    for file_idx, _file in enumerate(files):
+        read_from = open(_file, "r").read().split('\n')
+        input_files.append(read_from)
+        for line_idx in range(len(read_from)):
+            file_lines.append("{}-{}".format(file_idx, line_idx))
+
+    params.update({'inputs': file_lines, 'files': input_files})
+    res = multiprocessing_with_async(params, func=preprocess_mecab_pool_line)
+
+    for file_idx in enumerate(files):
+        write_file = "/".join([os.path.dirname(_file), save_path, os.path.basename(_file)])
+        write_from = open(write_file, "w")
+        for line, values in res[int(file_idx)].items():
+            write_from.write("\n".join(values))
+
+        write_from.close()
+
     return res, str(data_path) + str(save_path)
 
 
