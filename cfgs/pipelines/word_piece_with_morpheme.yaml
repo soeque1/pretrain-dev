@@ -9,7 +9,7 @@ Path:
 
 
 Pipelines:
-    Tokenizer: WordPieceTokenizer()
+    Tokenizer: WordPieceTokenizer(unk_token='[UNK]')
 
     normalizer: []
 
