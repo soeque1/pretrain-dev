@@ -3,7 +3,8 @@ import logging
 from logging import config, getLogger
 
 
-def custom_logger(path: str):
-   with open(path, "rt") as file:
-      config = json.load(file)
-   return config
+with open('./cfgs/logger.json', "rt") as file:
+   config = json.load(file)
+
+logging.config.dictConfig(config)
+log = getLogger(__name__)
