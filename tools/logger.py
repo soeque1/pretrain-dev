@@ -8,3 +8,4 @@ with open('./cfgs/logger.json', "rt") as file:
 
 logging.config.dictConfig(config)
 log = getLogger(__name__)
+log.info(config)
