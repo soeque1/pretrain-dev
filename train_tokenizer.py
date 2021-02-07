@@ -14,19 +14,23 @@ from tools.utils import (
     preprocess_mecab_pool_line
 )
 
+import logging
+log = logging.getLogger(__name__)
+
 
 def sampling(data_path: str, sample_rate: float, save_path: str = '/samples/') -> None:
     files = glob.glob(str(data_path))
     params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
     params.update({'sample_rate': sample_rate})
+    log.debug(params)
     res = multiprocessing_with_async(params, func=preprocess_shuf_pool)
     return res, str(data_path) + str(save_path)
-
 
 
 def morphme(data_path: str, save_path: str = '/mecab/') -> None:
     files = glob.glob(str(data_path) + '/*.txt')
     params = {'inputs': files, 'targets': ["/".join([os.path.dirname(i), save_path, os.path.basename(i)]) for i in files]}
+    log.debug(params)
     res = multiprocessing_with_async(params, func=preprocess_mecab_pool)
     return res, str(data_path) + str(save_path)
 
@@ -44,6 +48,7 @@ def morphme_lines(data_path: str, save_path: str = '/mecab/') -> None:
             file_lines.append("{}-{}".format(file_idx, line_idx))
 
     params.update({'inputs': file_lines, 'files': input_files})
+    log.debug(params)
     res = multiprocessing_with_async(params, func=preprocess_mecab_pool_line)
 
     for file_idx in enumerate(files):
@@ -61,27 +66,33 @@ def main(cfg):
     config = cfg_from_yaml_file(cfg)
 
     # Sampling
+    log.info('start sampling')
     _, path = sampling(data_path=config['Path']['data-path'], sample_rate=config['Samples']['rate'], save_path='/samples/')
 
     # Morphme
     if config['Morpheme-aware']:
+        log.info('start morpheme')
         _, save_path = morphme(data_path=config['Path']['save-path'], save_path='/mecab/')
     else:
         save_path = config['Path']['save-path']
 
     texts = glob.glob(save_path + '*.txt')
+    log.debug(texts)
 
     # tokenizer
+    log.info('set tokenizer')
     tokenizer = config['Pipelines']['Tokenizer']
     tokenizer.pre_tokenizer = config['Pipelines']['pre_tokenizer']
     tokenizer.normalizer = normalizers.Sequence(config['Pipelines']['normalizer'])
     tokenizer.decoder = config['Pipelines']['decoder']
 
     # train
+    log.info('train tokenizer')
     tokenizer.train(texts, show_progress=True)
 
     # eval
-    print(tokenizer.encode("안녕하세요").tokens)
+    log.info('eval tokenizer')
+    log.info(tokenizer.encode("안녕하세요").tokens)
 
 
 if __name__ == '__main__':

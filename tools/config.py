@@ -24,6 +24,10 @@ from tools.word_piece import WordPieceTokenizer
 from tools.BBPE import ByteLevelBPETokenizer
 from tools.CBPE import CharBPETokenizer
 
+from logging import getLogger
+
+log = getLogger(__name__)
+
 
 def cfg_from_yaml_file(cfg_file):
     def check_and_evalfunc(config):
@@ -40,6 +44,6 @@ def cfg_from_yaml_file(cfg_file):
             config = yaml.load(f)
 
     config = check_and_evalfunc(config)
-    print(config)
+    log.info(config)
 
     return config
