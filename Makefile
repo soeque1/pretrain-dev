@@ -1,0 +1,12 @@
+format:
+	isort . --sp .isort.cfg --skip data --skip Dockerfile
+	black . -l 99
+
+lint:
+	find . -iname "*.py" | xargs pylint --rcfile=.pylintrc || exit 0
+
+lint-report:
+	find . -iname "*.py" | xargs pytest --pylint --pylint-rcfile=.pylintrc --flake8 || exit 0
+
+typehint:
+	find . -iname "*.py" | xargs mypy --ignore-missing-imports --show-error-codes --pretty --strict || exit 0
