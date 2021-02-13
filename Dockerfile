@@ -2,6 +2,7 @@ FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
 # Install stand basic dependencies
 RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive && \
     apt-get -y install --only-upgrade bash && \
     apt-get -y install software-properties-common && \
     add-apt-repository -y ppa:ubuntu-toolchain-r/test && \
@@ -20,7 +21,7 @@ RUN apt-get update && \
     ./configure && \
     make altinstall
 
-RUN ln -s /usr/local/bin/python3.7 /usr/bin/python
+RUN ln -s /usr/local/bin/python3.7.7 /usr/bin/python
 RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python get-pip.py
 
