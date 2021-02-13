@@ -1,0 +1,7 @@
+Path:
+  data-path: ./data/corpus/namuwiki/samples/namuwiki.*.txt
+  save-path: ./data/corpus/namuwiki/samples/serialzed/
+  token: ./data/token/namuwiki/v1/WordPieceTokenizer.json
+
+Method:
+  serialization: pyarrow

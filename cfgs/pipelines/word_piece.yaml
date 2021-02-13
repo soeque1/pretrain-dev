@@ -16,3 +16,7 @@ Pipelines:
     pre_tokenizer: Whitespace()
 
     decoder: WordPieceTokenizer()
+
+Save:
+  folder: ./cfgs/pretrained/word_piece/
+  file: v1.json

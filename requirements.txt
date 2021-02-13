@@ -5,6 +5,7 @@ tokenizers
 konlpy
 mypy
 pylint
+pyarrow
 PyYAML
 pytest
 pytest-flake8

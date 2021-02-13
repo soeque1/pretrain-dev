@@ -4,7 +4,7 @@ import re
 import glob
 
 # configs
-from tools.config import cfg_from_yaml_file
+from tools.config import cfg_from_yaml_file, cvt_tokenizer
 from tokenizers import normalizers
 
 # utils
@@ -63,7 +63,7 @@ def morphme_lines(data_path: str, save_path: str = '/mecab/') -> None:
 
 
 def main(cfg):
-    config = cfg_from_yaml_file(cfg)
+    config = cfg_from_yaml_file(cfg, cvt_tokenizer)
 
     # Sampling
     log.info('start sampling')
@@ -93,6 +93,10 @@ def main(cfg):
     # eval
     log.info('eval tokenizer')
     log.info(tokenizer.encode("안녕하세요").tokens)
+
+    # save
+    os.makedirs(config['Save']['folder'], exist_ok=True)
+    tokenizer.save(config['Save']['folder'] + config['Save']['file'])
 
 
 if __name__ == '__main__':
