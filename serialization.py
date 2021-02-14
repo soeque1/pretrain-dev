@@ -52,8 +52,10 @@ def serialize_mmap_pool(params_index):
             dataset = csv.read_csv(data_file, parse_options=csv.ParseOptions(delimiter='\a', newlines_in_values='\n'))
             tokenizer = Tokenizer.from_file(params['tokenizer_path'])
             seq_len = params['tokenizer_length']
-            tokenizer.enable_padding(length=seq_len)
-            tokenizer.enable_truncation(seq_len, stride=0, strategy='longest_first')
+
+            # dynamic length
+            # tokenizer.enable_padding(length=seq_len)
+            # tokenizer.enable_truncation(seq_len, stride=0, strategy='longest_first')
 
             output_bin_files = "{}_{}_{}.bin".format(output_prefix, key, level)
             output_idx_files = "{}_{}_{}.idx".format(output_prefix, key, level)
@@ -63,8 +65,6 @@ def serialize_mmap_pool(params_index):
             for idx, sentence in enumerate(dataset[0]):
                 encoded = tokenizer.encode(str(sentence)).ids
                 builders.add_item(torch.IntTensor(encoded))
-                if len(encoded) != seq_len:
-                    fail.add(file_idx)
 
             builders.finalize(output_idx_files)
             succ.add(file_idx)
