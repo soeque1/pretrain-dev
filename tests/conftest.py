@@ -16,11 +16,20 @@ def tokenizer_cfg():
 
 
 @pytest.fixture(scope="package")
-def serialization_cfg():
+def serialization_pyarrow_cfg():
     yaml_path = Path.cwd() / "cfgs/serialization/pyarrow_v1.yaml"
     cfg = cfg_from_yaml_file(yaml_path, cvt_serialization)
     cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
-    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/serialized"
+    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/serialized/pyarrow/"
+    return cfg
+
+
+@pytest.fixture(scope="package")
+def serialization_mmap_cfg():
+    yaml_path = Path.cwd() / "cfgs/serialization/mmap_v1.yaml"
+    cfg = cfg_from_yaml_file(yaml_path, cvt_serialization)
+    cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
+    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/serialized/mmap/namuwiki"
     return cfg
 
 
@@ -50,5 +59,11 @@ def setup_and_teardown_package():
     for namuwiki_filepath in list_of_namuwiki_filepath:
         os.remove(namuwiki_filepath)
 
-    for i in glob.glob(str(test_dir) + '/**/*.txt', recursive=True) + glob.glob(str(test_dir) + '/**/*.parquet', recursive=True):
+    exts = ['txt', 'parquet', 'bin', 'idx']
+    files = []
+
+    for _ext in exts:
+        files.extend(glob.glob(str(test_dir) + '/**/*.' + _ext, recursive=True))
+
+    for i in files:
         os.remove(i)

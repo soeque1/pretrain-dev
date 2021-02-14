@@ -1,0 +1,10 @@
+Path:
+  data-path: ./data/corpus/namuwiki/samples/namuwiki.*.txt
+  save-path: ./data/corpus/namuwiki/samples/serialzed/mmap/namuwiki
+
+Tokenizer:
+  token: ./data/token/namuwiki/v1/WordPieceTokenizer.json
+  seq_len: 1024
+
+Method:
+  serialization: mmap

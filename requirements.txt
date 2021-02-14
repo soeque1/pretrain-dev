@@ -3,6 +3,7 @@ flake8
 isort
 tokenizers
 konlpy
+megatron-lm
 mypy
 pylint
 pyarrow
@@ -10,3 +11,4 @@ PyYAML
 pytest
 pytest-flake8
 pytest-pylint
+torch

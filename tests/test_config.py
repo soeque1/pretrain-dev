@@ -9,8 +9,8 @@ def test_tokenizer_configs(tokenizer_cfg):
     assert list(tokenizer_cfg.get('Pipelines').keys()) == ['Tokenizer', 'normalizer', 'pre_tokenizer', 'decoder']
 
 
-def test_sericalization_configs(serialization_cfg):
-    assert list(serialization_cfg.keys()) == ['Path', 'Tokenizer', "Method"]
-    assert list(serialization_cfg.get('Path').keys()) == ['data-path', 'save-path']
-    assert list(serialization_cfg.get('Tokenizer').keys()) == ['token', 'seq_len']
-    assert serialization_cfg.get('Method').get('serialization') == 'pyarrow'
+def test_sericalization_configs(serialization_pyarrow_cfg):
+    assert list(serialization_pyarrow_cfg.keys()) == ['Path', 'Tokenizer', "Method"]
+    assert list(serialization_pyarrow_cfg.get('Path').keys()) == ['data-path', 'save-path']
+    assert list(serialization_pyarrow_cfg.get('Tokenizer').keys()) == ['token', 'seq_len']
+    assert serialization_pyarrow_cfg.get('Method').get('serialization') == 'pyarrow'

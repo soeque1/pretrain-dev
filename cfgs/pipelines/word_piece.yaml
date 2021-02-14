@@ -18,5 +18,5 @@ Pipelines:
     decoder: WordPieceTokenizer()
 
 Save:
-  folder: ./cfgs/pretrained/word_piece/
-  file: v1.json
+  folder: ./data/token/namuwiki/v1/
+  file: WordPieceTokenizer.json
