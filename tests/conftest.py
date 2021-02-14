@@ -1,7 +1,27 @@
+import glob
 import os
 from pathlib import Path
 import pytest
 from tools.config import cfg_from_yaml_file, cvt_tokenizer, cvt_serialization
+
+
+@pytest.fixture(scope="package")
+def tokenizer_cfg():
+    yaml_path = Path.cwd() / "cfgs/pipelines/word_piece_with_morpheme.yaml"
+    cfg = cfg_from_yaml_file(yaml_path, cvt_tokenizer)
+    cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
+    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/"
+    cfg['Samples']['rate'] = 0.9
+    return cfg
+
+
+@pytest.fixture(scope="package")
+def serialization_cfg():
+    yaml_path = Path.cwd() / "cfgs/serialization/pyarrow_v1.yaml"
+    cfg = cfg_from_yaml_file(yaml_path, cvt_serialization)
+    cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
+    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/serialized"
+    return cfg
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -26,24 +46,9 @@ def setup_and_teardown_package():
 
     yield
 
+    # teardown
     for namuwiki_filepath in list_of_namuwiki_filepath:
         os.remove(namuwiki_filepath)
 
-
-@pytest.fixture(scope="package")
-def tokenizer_cfg():
-    yaml_path = Path.cwd() / "cfgs/pipelines/word_piece_with_morpheme.yaml"
-    cfg = cfg_from_yaml_file(yaml_path, cvt_tokenizer)
-    cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
-    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/"
-    cfg['Samples']['rate'] = 0.9
-    return cfg
-
-
-@pytest.fixture(scope="package")
-def serialization_cfg():
-    yaml_path = Path.cwd() / "cfgs/serialization/hdf5_v1.yaml"
-    cfg = cfg_from_yaml_file(yaml_path, cvt_serialization)
-    cfg['Path']['data-path'] = Path.cwd() / "tests/resources/namuwiki.*.txt"
-    cfg['Path']['save-path'] = Path.cwd() / "tests/resources/samples/"
-    return cfg
+    for i in glob.glob(str(test_dir) + '/**/*.txt', recursive=True) + glob.glob(str(test_dir) + '/**/*.parquet', recursive=True):
+        os.remove(i)

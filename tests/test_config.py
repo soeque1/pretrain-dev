@@ -10,6 +10,7 @@ def test_tokenizer_configs(tokenizer_cfg):
 
 
 def test_sericalization_configs(serialization_cfg):
-    assert list(serialization_cfg.keys()) == ['Path', 'Method']
-    assert list(serialization_cfg.get('Path').keys()) == ['data-path', 'save-path', 'token']
-    assert serialization_cfg.get('Method').get('serialization') == 'hdf5'
+    assert list(serialization_cfg.keys()) == ['Path', 'Tokenizer', "Method"]
+    assert list(serialization_cfg.get('Path').keys()) == ['data-path', 'save-path']
+    assert list(serialization_cfg.get('Tokenizer').keys()) == ['token', 'seq_len']
+    assert serialization_cfg.get('Method').get('serialization') == 'pyarrow'
