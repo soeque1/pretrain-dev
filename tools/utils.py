@@ -7,6 +7,11 @@ from konlpy.tag import Mecab
 from typing import List, Callable
 from subprocess import PIPE, run
 
+import logging
+import traceback
+log = logging.getLogger(__name__)
+
+
 # test
 mecab = Mecab()
 mecab.morphs("안녕")
@@ -97,6 +102,7 @@ def multiprocessing_with_async(params: dict, func: Callable[..., int], *args, **
         try:
             outputs.append(res.get(timeout=60 * 10))
         except mp.TimeoutError:
+            log.error(traceback.print_exc())
             print('Failed at:', res)
 
     pool.close()

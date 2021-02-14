@@ -47,7 +47,7 @@ def serialize_mmap_pool(params_index):
             key = 'text'
 
             data_file = params['inputs'][file_idx]
-            output_prefix = params['target-prefix']
+            output_prefix = "{}-{}".format(params['target-prefix'], file_idx)
 
             dataset = csv.read_csv(data_file, parse_options=csv.ParseOptions(delimiter='\a', newlines_in_values='\n'))
             tokenizer = Tokenizer.from_file(params['tokenizer_path'])
@@ -98,6 +98,7 @@ def serialize_pyarrow_pool(params_index):
             tokenizer.enable_padding(length=seq_len)
             tokenizer.enable_truncation(seq_len, stride=0, strategy='longest_first')
 
+            log.info("{}-{}".format(file_idx, 'text encoding'))
             serial = {}
             for idx, sentence in enumerate(dataset[0]):
                 encoded = tokenizer.encode(str(sentence)).ids
@@ -105,11 +106,13 @@ def serialize_pyarrow_pool(params_index):
                     fail.add(file_idx)
                 serial.update({idx: encoded})
 
-            # pd
+            log.info("{}-{}".format(file_idx, 'pandas format'))
             df = pd.DataFrame.from_dict(serial, orient='columns')
-            # pa
+
+            log.info("{}-{}".format(file_idx, 'pyarrow'))
             tb = pa.Table.from_pandas(df)
-            # parquet
+
+            log.info("{}-{}".format(file_idx, 'parquet'))
             pq.write_table(tb, save_file)
             succ.add(file_idx)
         except Exception:
@@ -150,6 +153,7 @@ def main(serializaiton_cfg):
     else:
         raise NotImplementedError
 
+    log.info('Serialize')
     _, save_path = serialize(data_path=config['Path']['data-path'],
         save_path=config['Path']['save-path'],
         tokenizer_path=config['Tokenizer']['token'],
